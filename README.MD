@@ -10,5 +10,4 @@ Debuff will remove 2 from the winning player's score. If the winning player play
 
 The player who plays the card with the highest numeric value wins the round. The player who won will have their score increase by their card's numeric value.
 
-To start the game execute main.py...
-python3 main.py
+To start the game execute main.py
