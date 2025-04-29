@@ -30,58 +30,8 @@ class Round:
         self.display_players_cards(self._human_player)
         played_cards: List[Tuple[Player, Card]] = []
 
-        # human player plays card
-        played_cards.append((self._human_player, self.get_card_player_played(self._human_player)))
-
-        # opponents randomly choose a card
-        for player in self._opponents:
-            if player.is_intelligent == False:
-                cards_by_token: Dict[str, List[Card]] = player.cards
-                random_cards_by_token = random.choice(list(cards_by_token.values()))
-                card_to_play = random.choice(random_cards_by_token)
-            else:
-                # look at buffed cards
-                cards_by_token: Dict[str, List[Card]] = player.cards
-                if self._buff in cards_by_token:
-                    buff_cards: List[Card] = cards_by_token[self._buff]
-                else:
-                    buff_cards: List[Card] = []
-                if self._debuff in cards_by_token:
-                    debuff_cards: List[Card] = cards_by_token[self._debuff]
-                else:
-                    debuff_cards: List[Card] = []
-                buff_and_debuff_cards: List[Card] = buff_cards + debuff_cards
-                sorted_buff_and_debuff_cards = sorted(buff_and_debuff_cards, key=lambda card: card.get_adjusted_numeric_value(self._buff), reverse=True)
-                # if no cards with buff/debuff choose the highest value
-                if len(sorted_buff_and_debuff_cards) == 0:
-                    random_cards_by_token = random.choice(cards_by_token.values())
-                    sorted_random_cards_by_token = sorted(random_cards_by_token, key=lambda card: card.get_adjusted_numeric_value(self._buff), reverse=True)
-                    card_to_play = sorted_random_cards_by_token[0]
-                else:
-                    # Choose the highest value of the buff or debuff cards
-                    highest_buff_card: Card = None
-                    highest_debuff_card: Card = None
-                    for card in sorted_buff_and_debuff_cards:
-                        if card.token == self._buff:
-                            if highest_buff_card == None:
-                                highest_buff_card = card
-                                continue
-                        if card.token == self._debuff:
-                            if highest_debuff_card == None:
-                                highest_debuff_card = card
-                                continue
-                        # done searching when found the highest debuff and buff card
-                        if highest_buff_card != None and highest_debuff_card != None:
-                            break
-                    if highest_buff_card is None:
-                        card_to_play = highest_debuff_card
-                    elif highest_debuff_card is None:
-                        card_to_play = highest_buff_card
-                    elif highest_buff_card.get_adjusted_numeric_value(self._buff) > highest_debuff_card.get_adjusted_numeric_value(self._buff) + 2:
-                        card_to_play = highest_buff_card
-                    else:
-                        card_to_play = highest_debuff_card
-            played_cards.append((player, card_to_play))
+        for player in self._players:
+            played_cards.append((player, player.play_card(self._buff, self._debuff)))
 
         # calculate the results
         winning_player_card_list: List[Tuple[Player, Card]] = []
@@ -112,26 +62,6 @@ class Round:
             adjusted_winning_card_score = max(winning_card_score - (number_of_debuffers * 2), 0)
             print(f"{winning_player.name} Scored {adjusted_winning_card_score} points\n")
             winning_player.update_score(adjusted_winning_card_score)
-
-    def get_card_player_played(self, human_player: Player) -> Card:
-        players_cards: List[Card] = human_player.get_all_cards()
-        # ask what card to play
-        valid_card_index = False
-        while valid_card_index == False:
-            card_index_input = input("What card would you like to play? ")
-            try:
-                card_index = int(card_index_input)
-            except:
-                print("Invalid card choice...")
-                continue
-            if card_index < 0 or card_index > len(players_cards) - 1:
-                print("Invalid card choice...")
-                continue
-            
-            valid_card_index = True
-        card_to_play: Card = players_cards[card_index]
-        human_player.play_card(card_to_play)
-        return card_to_play
 
     def display_players_scores(self, players: List[Player]):
         # Display Names and Scores
