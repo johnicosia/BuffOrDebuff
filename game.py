@@ -24,10 +24,11 @@ class Game:
         Creates the list of players
         """
         self._players: List[Player] = []
-        self._human_player: Player = Player(player_name)
+        self._human_player: Player = Player(player_name, True)
         self._players.append(self._human_player)
         for i in range(1, number_of_opponents + 1):
-            self._players.append(Player("Opponent " + str(i)))
+            is_intelligent = random.choice([True, False])
+            self._players.append(Player("Opponent " + str(i) + (" (Smart)" if is_intelligent else ""), False, is_intelligent))
     
     def create_cards(self, card_tokens: List[str], card_numeric_values: List[int]):
         """
